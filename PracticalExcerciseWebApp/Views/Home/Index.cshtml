@@ -2,30 +2,131 @@
     ViewBag.Title = "Home Page";
 }
 
-<div class="jumbotron">
-    <h1>ASP.NET</h1>
-    <p class="lead">ASP.NET is a free web framework for building great Web sites and Web applications using HTML, CSS and JavaScript.</p>
-    <p><a href="https://asp.net" class="btn btn-primary btn-lg">Learn more &raquo;</a></p>
+<br />
+
+<div class="container">
+    <div class="row">
+        <div class="col-sm-4">
+            @Html.DropDownList("Pract", ViewBag.Practitioner as IEnumerable<SelectListItem>, "select", new { @class = "form-control" })
+        </div>
+        <div class="col-sm-4">
+            <input type="date" class="form-control" id="date" />
+        </div>
+        <div class="col-sm-4">
+            <button class="btn btn-default" type="button" id="Report">Get Report</button>
+        </div>
+    </div>
+    <br />
+    <div class="row">
+        <div class="col-sm-12">
+            <table class="table table-bordered table-striped" id="tblStudent">
+                <thead>
+                    <tr>
+                        @*<th scope="col">id</th>*@
+                        @*<th scope="col">date</th>
+                            <th scope="col">client_name</th>
+                            <th scope="col">appointment_type</th>
+                            <th scope="col">duration</th>*@
+                        <th scope="col">practitioner_id</th>
+                        <th scope="col">revenue</th>
+                        <th scope="col">cost</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </div>
 </div>
 
-<div class="row">
-    <div class="col-md-4">
-        <h2>Getting started</h2>
-        <p>
-            ASP.NET MVC gives you a powerful, patterns-based way to build dynamic websites that
-            enables a clean separation of concerns and gives you full control over markup
-            for enjoyable, agile development.
-        </p>
-        <p><a class="btn btn-default" href="https://go.microsoft.com/fwlink/?LinkId=301865">Learn more &raquo;</a></p>
-    </div>
-    <div class="col-md-4">
-        <h2>Get more libraries</h2>
-        <p>NuGet is a free Visual Studio extension that makes it easy to add, remove, and update libraries and tools in Visual Studio projects.</p>
-        <p><a class="btn btn-default" href="https://go.microsoft.com/fwlink/?LinkId=301866">Learn more &raquo;</a></p>
-    </div>
-    <div class="col-md-4">
-        <h2>Web Hosting</h2>
-        <p>You can easily find a web hosting company that offers the right mix of features and price for your applications.</p>
-        <p><a class="btn btn-default" href="https://go.microsoft.com/fwlink/?LinkId=301867">Learn more &raquo;</a></p>
+
+<!-- Modal -->
+<div class="modal fade" id="myModal" role="dialog">
+    <div class="modal-dialog modal-lg">
+
+        <!-- Modal content-->
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <h4 class="modal-title">Practitioner Details</h4>
+            </div>
+            <div class="modal-body">
+                <table class="table table-bordered table-striped" id="tblDetails">
+                    <thead>
+                        <tr>
+                            <th scope="col">id</th>
+                            <th scope="col">date</th>
+                            <th scope="col">client_name</th>
+                            <th scope="col">appointment_type</th>
+                            <th scope="col">duration</th>
+                            <th scope="col">revenue</th>
+                            <th scope="col">cost</th>
+                            <th scope="col">practitioner_id</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+</div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+
     </div>
 </div>
+
+@section scripts{
+    <script>
+        var _date;
+        var _pract;
+        $('#Report').click(function () {
+            _date = $('#date').val();
+            _pract = $('#Pract').val();
+            fetchReport();
+        });
+
+        function fetchReport() {
+            $.ajax({
+                method: 'Get',
+                url: '/Home/GetReport/',
+                data: { date: _date, pract: _pract },
+                success: function (data) {
+                    console.log(data);
+                    $.each(data, function (index, item) {
+                        var rows = "<tr>"
+                            + "<td> <a onclick='fetchDetails()' href='javascript: void (0);' data-toggle='modal' data-target='#myModal'> " + item.practitioner_id + "</a></td>"
+                            + "<td>" + item.revenue + "</td>"
+                            + "<td>" + item.cost + "</td>"
+                            + "</tr>";
+
+                        $('#tblStudent tbody').append(rows);
+                    });
+                }
+            })
+        }
+
+        function fetchDetails() {
+            $.ajax({
+                method: 'Get',
+                url: '/Home/GetDetailReport/',
+                data: { date: _date, pract: _pract },
+                success: function (data) {
+                    console.log(data);
+                    $.each(data, function (index, item) {
+                        var rows = "<tr>"
+                            + "<td>" + item.id + "</td>"
+                            + "<td>" + item.date + "</td>"
+                            + "<td>" + item.client_name + "</td>"
+                            + "<td>" + item.appointment_type + "</td>"
+                            + "<td>" + item.duration + "</td>"
+                            + "<td>" + item.revenue + "</td>"
+                            + "<td>" + item.cost + "</td>"
+                            + "<td>" + item.practitioner_id + "</td>"
+                            + "</tr>";
+                        $('#tblDetails tbody').append(rows);
+                    });
+                }
+            })
+        }
+
+    </script>
+}
